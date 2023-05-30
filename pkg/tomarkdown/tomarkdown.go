@@ -65,6 +65,7 @@ func (tm *ToMarkdown) WithFrontMatter(page notion.Page) {
 	for fmKey, property := range pageProps {
 		tm.injectFrontMatter(fmKey, property)
 	}
+	tm.FrontMatter["draft"] = true
 }
 
 func (tm *ToMarkdown) EnableExtendedSyntax(target string) {
