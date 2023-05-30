@@ -276,9 +276,9 @@ func (tm *ToMarkdown) injectFrontMatter(key string, property notion.DatabasePage
 	case []notion.RichText:
 		fmv = ConvertRichText(prop)
 	case *time.Time:
-		fmv = prop.Format("2006-01-02T15:04:05+07:00")
+		fmv = prop.Format("2006-01-02T15:04:05Z")
 	case *notion.Date:
-		fmv = prop.Start.Format("2006-01-02T15:04:05+07:00")
+		fmv = prop.Start.Format("2006-01-02T15:04:05Z")
 	case *notion.User:
 		fmv = prop.Name
 	case *string:
