@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -84,19 +85,28 @@ func generate(page notion.Page, blocks []notion.Block, config Markdown) error {
 	return tm.GenerateTo(blocks, f)
 }
 
-func generateArticleFilename(title string, date time.Time, config Markdown) string {
-	escapedTitle := strings.ReplaceAll(
-		strings.ToValidUTF8(
-			strings.ToLower(title),
-			"",
-		),
-		" ", "-",
-	)
-	escapedFilename := escapedTitle + ".md"
+// generateArticleFilename creates a filesystem-safe slug from the title of the article
+func generateArticleFilename(title string, date time.Time, config Markdown) (escapedFilename string) {
+	// Replace characters not explicitly allowed with a placeholder (hyphen)
+	slugReplacementChar := "-"
+	disallowedSlugChars := regexp.MustCompile("[^A-Za-z0-9_.-]+")
+	slugReplacementTrimmer := regexp.MustCompile(fmt.Sprintf("^%s+|%s+-$", slugReplacementChar, slugReplacementChar))
+	slugReplacementDeduper := regexp.MustCompile(fmt.Sprintf("%s+", slugReplacementChar))
+
+	escapedTitle := strings.ToLower(title)
+	escapedTitle = strings.ToValidUTF8(escapedTitle, "")
+	// Disallow most characters, but allow alphanumeric (plus -_.) in filename
+	escapedTitle = disallowedSlugChars.ReplaceAllLiteralString(escapedTitle, slugReplacementChar)
+	// Dedupe `---` in URL to just `-`, since it may have been `-@'` originally
+	escapedTitle = slugReplacementDeduper.ReplaceAllLiteralString(escapedTitle, slugReplacementChar)
+	// Leading and trailing `-` can lead to problems, and it just looks ugly. Remove it.
+	escapedTitle = slugReplacementTrimmer.ReplaceAllLiteralString(escapedTitle, "")
+
+	escapedFilename = escapedTitle + ".md"
 
 	if config.GroupByMonth {
-		return filepath.Join(date.Format("2006-01-02"), escapedFilename)
+		escapedFilename = filepath.Join(date.Format("2006-01-02"), escapedFilename)
 	}
 
-	return escapedFilename
+	return
 }
