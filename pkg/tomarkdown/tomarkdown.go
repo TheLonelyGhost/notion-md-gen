@@ -285,6 +285,8 @@ func (tm *ToMarkdown) injectFrontMatter(key string, property notion.DatabasePage
 		fmv = *prop
 	case *float64:
 		fmv = *prop
+	case *bool:
+		fmv = *prop
 	default:
 		fmt.Printf("Unsupport prop: %s - %T\n", prop, prop)
 	}
